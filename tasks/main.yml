@@ -34,6 +34,19 @@
   register: output
   when: not gitlab_file.stat.exists
 
+- name: Update GitLab repository to use Buster instead of Bulsseye
+  replace:
+    path: '/etc/apt/sources.list.d/gitlab_gitlab-ce.list'
+    regexp: 'bullseye'
+    replace: 'buster'
+  register: gitlab_repo_debian11
+  when: ansible_os_family == 'Debian'
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+  when: ansible_os_family == 'Debian' and gitlab_repo_debian11.changed
+
 - name: Define the Gitlab package name.
   set_fact:
     gitlab_package_name: "{{ gitlab_edition }}{{ gitlab_package_version_separator }}{{ gitlab_version }}"
